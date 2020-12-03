@@ -7,6 +7,7 @@ import string
 import collections
 from typing import Counter
 import numpy as np
+import string
 
 #Accuracy
 def accuracy(M):
@@ -76,7 +77,8 @@ for line in f:
 
         for letter in to_delete:
             word = word.replace(letter, '')
-        o.write(word + " ")
+        w = word.lower()
+        o.write(w + " ")
 f.close()
 o.close()
 
@@ -94,7 +96,7 @@ bag = dict(sorted(bag.items(), key=lambda item: item[1], reverse=True))
 
 
 # Step 3: Data split
-feature = "modestly"
+feature = "cells"
 pageSize = 500
 
 frequent_words = list(bag.keys())
@@ -145,7 +147,8 @@ from sklearn.metrics import confusion_matrix
 
 clf = GaussianNB()
 clf.fit(X, Y)
-confusion = confusion_matrix(Y_test,clf.predict(X_test))
+pred = clf.predict(X_test)
+confusion = confusion_matrix(Y_test,pred)
 acc = round(accuracy(confusion)*100)
 prec = round(macro_avg(precision,confusion)*100)
 rec = macro_avg(recall,confusion)*100
@@ -158,7 +161,8 @@ from sklearn.metrics import confusion_matrix
 
 clf = tree.DecisionTreeClassifier()
 clf = clf.fit(X, Y)
-confusion = confusion_matrix(Y_test,clf.predict(X_test))
+pred = clf.predict(X_test)
+confusion = confusion_matrix(Y_test,pred)
 acc = round(accuracy(confusion)*100)
 prec = round(macro_avg(precision,confusion)*100)
 rec = macro_avg(recall,confusion)*100
@@ -171,12 +175,13 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
-X_train, X_test, y_train, y_test = train_test_split(X, Y, stratify=Y,
+X_train, X_test, y_train, y_test = train_test_split(X, Y,
                                                     random_state=1)
 
 clf = MLPClassifier(random_state=1, max_iter=300).fit(X_train, y_train)
 clf.predict_proba(X_test)
-confusion = confusion_matrix(Y_test,clf.predict(X_test))
+pred = clf.predict(X_test)
+confusion = confusion_matrix(Y_test,pred)
 acc = round(accuracy(confusion)*100)
 prec = round(macro_avg(precision,confusion)*100)
 rec = macro_avg(recall,confusion)*100
@@ -189,13 +194,21 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import confusion_matrix
 reg = LinearRegression().fit(X, Y)
 reg.score(X, Y)
-confusion = confusion_matrix(Y_test,clf.predict(X_test))
+pred = clf.predict(X_test)
+confusion = confusion_matrix(Y_test,pred)
 acc = round(accuracy(confusion)*100)
 prec = round(macro_avg(precision,confusion)*100)
 rec = macro_avg(recall,confusion)*100
 F1 = macro_avg(F1_score,confusion)*100
 
-
+tp = []
+tp.append(acc)
+tp.append(prec)
+tp.append(rec)
+tp.append(F1)
+print(tp)
+print(confusion)
+print(index_percent)
 
 
 
