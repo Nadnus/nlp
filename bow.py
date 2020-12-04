@@ -1,3 +1,8 @@
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_classification
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import confusion_matrix
 from sklearn import tree
 from sklearn.naive_bayes import GaussianNB
 import copy
@@ -8,8 +13,11 @@ import collections
 from typing import Counter
 import numpy as np
 import string
+import pandas as pd
 
-#Accuracy
+# Accuracy
+
+
 def accuracy(M):
     total = 0
     correct = 0
@@ -17,47 +25,54 @@ def accuracy(M):
         for j in range(len(M)):
             total += M[i][j]
             if i == j:
-                correct+=M[i][j]
+                correct += M[i][j]
     return correct/total
 
 # Precision
-def precision(M, index): #index es la posicion de la variable de interes
+
+
+def precision(M, index):  # index es la posicion de la variable de interes
     correct = M[index][index]
     total = 0
     for i in range(len(M)):
         for j in range(len(M)):
             if i == index:
-                total+= M[i][j]
+                total += M[i][j]
     if total == 0:
         return 0
 
     return correct/total
 
 # Recall
-def recall(M, index): #index es la posicion de la variable de interes
+
+
+def recall(M, index):  # index es la posicion de la variable de interes
     correct = M[index][index]
     total = 0
     for i in range(len(M)):
         for j in range(len(M)):
             if j == index:
-                total+= M[i][j]
+                total += M[i][j]
     if total == 0:
         return 0
 
     return correct/total
 
 # F1
-def F1_score(M,index):
-    P = precision(M,index)
-    R = recall(M,index)
+
+
+def F1_score(M, index):
+    P = precision(M, index)
+    R = recall(M, index)
     if P+R == 0:
         return 0
     return (2*P*R)/(P+R)
 
-def macro_avg(func, M): #func es la metrica que queremos usar
+
+def macro_avg(func, M):  # func es la metrica que queremos usar
     accum = 0
     for i in range(len(M)):
-        accum+=func(M,i)
+        accum += func(M, i)
     return accum/len(M)
 
 
@@ -139,77 +154,67 @@ X = np.array(pageVectors[:index_percent])
 Y = np.array(clases[:index_percent])
 X_test = np.array(pageVectors[index_percent:])
 Y_test = np.array(clases[index_percent:])
-
+scores = []
 
 # algoritmo 1
 # Naive Bayes
-from sklearn.metrics import confusion_matrix
 
 clf = GaussianNB()
 clf.fit(X, Y)
 pred = clf.predict(X_test)
-confusion = confusion_matrix(Y_test,pred)
-acc = round(accuracy(confusion)*100)
-prec = round(macro_avg(precision,confusion)*100)
-rec = macro_avg(recall,confusion)*100
-F1 = macro_avg(F1_score,confusion)*100
-
+tupla = {}
+confusion = confusion_matrix(Y_test, pred)
+tupla["acc"] = round(accuracy(confusion)*100)
+tupla["prec"] = round(macro_avg(precision, confusion)*100)
+tupla["rec"] = macro_avg(recall, confusion)*100
+tupla["F1"] = macro_avg(F1_score, confusion)*100
+scores.append(tupla)
 
 # Algoritmo 2:
-#Decision Tree
-from sklearn.metrics import confusion_matrix
+# Decision Tree
 
 clf = tree.DecisionTreeClassifier()
 clf = clf.fit(X, Y)
 pred = clf.predict(X_test)
-confusion = confusion_matrix(Y_test,pred)
-acc = round(accuracy(confusion)*100)
-prec = round(macro_avg(precision,confusion)*100)
-rec = macro_avg(recall,confusion)*100
-F1 = macro_avg(F1_score,confusion)*100
+tupla = {}
+confusion = confusion_matrix(Y_test, pred)
+tupla["acc"] = round(accuracy(confusion)*100)
+tupla["prec"] = round(macro_avg(precision, confusion)*100)
+tupla["rec"] = macro_avg(recall, confusion)*100
+tupla["F1"] = macro_avg(F1_score, confusion)*100
+scores.append(tupla)
 
-
-#Algoritmo 3:
-#Redes neurales:
-from sklearn.neural_network import MLPClassifier
-from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
+# Algoritmo 3:
+# Redes neurales:
 X_train, X_test, y_train, y_test = train_test_split(X, Y,
                                                     random_state=1)
 
 clf = MLPClassifier(random_state=1, max_iter=300).fit(X_train, y_train)
 clf.predict_proba(X_test)
 pred = clf.predict(X_test)
-confusion = confusion_matrix(Y_test,pred)
-acc = round(accuracy(confusion)*100)
-prec = round(macro_avg(precision,confusion)*100)
-rec = macro_avg(recall,confusion)*100
-F1 = macro_avg(F1_score,confusion)*100
+tupla = {}
+confusion = confusion_matrix(Y_test, pred)
+tupla["acc"] = round(accuracy(confusion)*100)
+tupla["prec"] = round(macro_avg(precision, confusion)*100)
+tupla["rec"] = macro_avg(recall, confusion)*100
+tupla["F1"] = macro_avg(F1_score, confusion)*100
+scores.append(tupla)
 
-
-#Algoritmo 4:
-#Regresion
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import confusion_matrix
+# Algoritmo 4:
+# Regresion
 reg = LinearRegression().fit(X, Y)
 reg.score(X, Y)
 pred = clf.predict(X_test)
-confusion = confusion_matrix(Y_test,pred)
-acc = round(accuracy(confusion)*100)
-prec = round(macro_avg(precision,confusion)*100)
-rec = macro_avg(recall,confusion)*100
-F1 = macro_avg(F1_score,confusion)*100
+tupla = {}
+confusion = confusion_matrix(Y_test, pred)
+tupla["acc"] = round(accuracy(confusion)*100)
+tupla["prec"] = round(macro_avg(precision, confusion)*100)
+tupla["rec"] = macro_avg(recall, confusion)*100
+tupla["F1"] = macro_avg(F1_score, confusion)*100
+scores.append(tupla)
 
-tp = []
-tp.append(acc)
-tp.append(prec)
-tp.append(rec)
-tp.append(F1)
-print(tp)
-print(confusion)
-print(index_percent)
-
+marco = pd.DataFrame(scores)
+print(marco)
 
 
 # print(f)
