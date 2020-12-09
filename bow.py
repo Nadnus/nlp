@@ -79,25 +79,27 @@ def macro_avg(func, M):  # func es la metrica que queremos usar
 f = open("dataset.txt", "r")
 o = open("processed.txt", "w")
 printable = set(string.printable)
-to_delete = ['<', '/', '|', '(', '+', '%', ':', '{', '}', '.', ',']
+to_delete = ['<', '/', '(', '+', '%', ':', '{', '}', '.', ',']
 
 bracketsOpen = False
 for line in f:
     line = line.replace(" - ", "-")
     for word in line.split():
         word = ''.join(filter(lambda x: x in printable, word))
-        word = word.replace('=', ' ')
+        #word = word.replace('=', ' ')
         word = word.replace('>', ' ')
         word = word.replace(')', ' ')
-
+        word = word.replace('=====','||')
         for letter in to_delete:
             word = word.replace(letter, '')
         w = word.lower()
         o.write(w + " ")
+    o.write('\n')
 f.close()
 o.close()
 
-# Step 2
+
+#Step 2
 
 stop = stopwords.words('english')
 bag = collections.defaultdict(int)
@@ -110,27 +112,32 @@ for line in f:
 bag = dict(sorted(bag.items(), key=lambda item: item[1], reverse=True))
 
 
-# Step 3: Data split
-feature = "cells"
-pageSize = 500
+## Step 3: Data split
 
+##Aca poner un widget para elejir el largo del fracuentes
 frequent_words = list(bag.keys())
-feature_index = frequent_words.index(feature)
 incidence_vector = [0] * len(frequent_words)
-pages = []
-pages.append('')
+lineas = []
+clasificadores = []
+token = ''
 f = open("processed.txt", "r")
 for line in f:
-    for word in line.split():
-        pages[-1] += " " + word
-        if len(pages[-1].split()) >= pageSize:
-            pages.append(word)
-# Y ahora tenemos nuestra data paginada, sera cosa de cojer nuestro feature Y proceder a tratar de predecirlo
-# Antes que nada, tenemos que crear nuestros vectores para cada pagina
+    tokenized = line.split('||')
+    token = tokenized[0]
+    clasificadores.append[token]
+    for frase in tokenized:
+        if frase == token:
+            continue
+        lineas.append(token)
+        for word in frase.split():
+            lineas[-1] += " " + word
+            
+## Y ahora tenemos nuestra data paginada, sera cosa de cojer nuestro feature Y proceder a tratar de predecirlo
+## Antes que nada, tenemos que crear nuestros vectores para cada pagina
 
 pageVectors = []
 
-for page in pages:
+for page in lineas:
     vector = copy.deepcopy(incidence_vector)
     for word in page.split():
         for i in range(len(frequent_words)):
@@ -139,21 +146,25 @@ for page in pages:
     pageVectors.append(vector)
 print(len(pageVectors))
 # vamos a separar la variable clase
-clases = []
+#Aca se tiene que hacer el for por las clases dentro de la variable clasificadores
+feature = "cells"
+feature_index = frequent_words.index(feature)
+features = []
 for page in pageVectors:
     clase = page[feature_index]
-    clases.append(clase)
+    features.append(clase)
     page.pop(feature_index)
 
 # Aqui se hace el split de la data
+#Se tiene que cambiar la forma en la que se hace el split
 split = 80
 
 # Casteamos las variables a arreglos de numpy:
 index_percent = int(len(pageVectors)*split/100)
 X = np.array(pageVectors[:index_percent])
-Y = np.array(clases[:index_percent])
+Y = np.array(features[:index_percent])
 X_test = np.array(pageVectors[index_percent:])
-Y_test = np.array(clases[index_percent:])
+Y_test = np.array(features[index_percent:])
 scores = []
 
 # algoritmo 1
